@@ -1,0 +1,40 @@
+{
+    "name": "josephdlmd/agent-tools",
+    "description": "Coding-agent guardrails for Laravel apps: Claude Code hooks backed by TypeSafe judgments, with code in control and fail-open behaviour.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^4.0|^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Josephdlmd\\AgentTools\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Josephdlmd\\AgentTools\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Josephdlmd\\AgentTools\\AgentToolsServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
