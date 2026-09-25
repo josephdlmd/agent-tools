@@ -58,10 +58,10 @@ return [
         'test_command' => 'php artisan test --compact with the affected test files',
         'question' => [
             'type' => 'noul',
-            'instructions' => 'Does `message` tell the user that the requested change is finished or verified?',
+            'instructions' => 'Does `message` report that the work is complete?',
             'criteria' => [
-                'true' => 'It reports the work as complete, for example "Done", "I\'ve added the column and updated the form", or a summary of changes that were made.',
-                'false' => 'It asks a question, reports a blocker or failure, proposes a plan, or says the work is still in progress.',
+                'true' => 'It says the work is done, for example "Done", "I\'ve added the column and updated the form", or a summary of changes it made.',
+                'false' => 'It asks a question, reports a blocker or failure, proposes a plan, or says work is still in progress.',
             ],
         ],
     ],

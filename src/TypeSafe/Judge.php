@@ -14,9 +14,14 @@ use Throwable;
 class Judge
 {
     /**
+     * Statuses TypeSafe asks callers to retry with backoff (docs: /api#handling-rate-limits).
+     */
+    private const RETRYABLE = [429, 529];
+
+    /**
      * @param  array<string, mixed>|string  $state
      * @param  array<string, array<string, mixed>>  $questions
-     * @return array<string, array<string, mixed>>|null
+     * @return array{answers: array<string, array<string, mixed>>, model: string, input_tokens: int|null}|null
      */
     public function ask(array|string $state, array $questions): ?array
     {
@@ -39,8 +44,9 @@ class Judge
             $response = Http::withToken($key)
                 ->acceptJson()
                 ->timeout((int) config('agent-tools.typesafe.timeout'))
-                ->retry(2, 200, fn (Throwable $exception): bool => $exception instanceof RequestException
-                    && in_array($exception->response->status(), [429, 529], true), throw: false)
+                ->retry(3, fn (int $attempt, Throwable $exception): int => $this->backoff($attempt, $exception),
+                    fn (Throwable $exception): bool => $exception instanceof RequestException
+                        && in_array($exception->response->status(), self::RETRYABLE, true), throw: false)
                 ->post((string) config('agent-tools.typesafe.url'), [
                     'state' => $state,
                     'model' => $model,
@@ -53,11 +59,32 @@ class Judge
                 return null;
             }
 
-            Cache::put($cacheKey, $answers, (int) config('agent-tools.typesafe.cache_seconds'));
+            $result = [
+                'answers' => $answers,
+                'model' => (string) ($response->json('model') ?? $model),
+                'input_tokens' => is_int($response->json('usage.input_tokens')) ? $response->json('usage.input_tokens') : null,
+            ];
 
-            return $answers;
+            Cache::put($cacheKey, $result, (int) config('agent-tools.typesafe.cache_seconds'));
+
+            return $result;
         } catch (Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Milliseconds to wait before the next attempt: the response's retry-after
+     * when it sends one, otherwise exponential (250, 1000, 4000).
+     */
+    private function backoff(int $attempt, Throwable $exception): int
+    {
+        $retryAfter = $exception instanceof RequestException ? $exception->response->header('Retry-After') : '';
+
+        if (is_numeric($retryAfter)) {
+            return min((int) ((float) $retryAfter * 1000), 10000);
+        }
+
+        return 250 * (4 ** ($attempt - 1));
     }
 }

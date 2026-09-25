@@ -84,3 +84,18 @@ it('fails open when TypeSafe errors or has no key', function (): void {
     config(['agent-tools.typesafe.key' => null]);
     expect(app(StopGuard::class)->evaluate($input))->toBeNull();
 });
+
+it('sends only the start and end of a long message', function (): void {
+    fakeClaimsDone(0.9);
+    $long = 'Done. '.str_repeat('Detail about the change. ', 400).'All tests pass.';
+
+    app(StopGuard::class)->evaluate(stopInput(transcript([
+        ['Edit', ['file_path' => '/app/Order.php']],
+    ]), ['last_assistant_message' => $long]));
+
+    Http::assertSent(function ($request): bool {
+        $sent = $request['state']['message'];
+
+        return mb_strlen($sent) < 2100 && str_starts_with($sent, 'Done.') && str_ends_with($sent, 'All tests pass.');
+    });
+});

@@ -40,8 +40,8 @@ class StopGuard
             return null;
         }
 
-        $answers = $this->judge->ask(['message' => $message], ['claims_done' => $config['question']]);
-        $claimsDone = $answers['claims_done']['noul'] ?? null;
+        $judgment = $this->judge->ask(['message' => $this->excerpt($message)], ['claims_done' => $config['question']]);
+        $claimsDone = $judgment['answers']['claims_done']['noul'] ?? null;
 
         if (! is_numeric($claimsDone)) {
             return null;
@@ -53,7 +53,8 @@ class StopGuard
         $this->log([
             'event' => 'stop',
             'session_id' => $input['session_id'] ?? null,
-            'model' => config('agent-tools.typesafe.model'),
+            'model' => $judgment['model'] ?? null,
+            'input_tokens' => $judgment['input_tokens'] ?? null,
             'claims_done' => (float) $claimsDone,
             'threshold' => (float) $config['threshold'],
             'unformatted' => $unformatted,
@@ -94,6 +95,21 @@ class StopGuard
 
         return 'You changed PHP files this turn ('.$files.') without checking them afterwards. Before reporting the work as done, '
             .implode(' and ', $steps).', then report the result.';
+    }
+
+    /**
+     * The start and end of a long message, where a claim of being done sits;
+     * the middle is detail that only lowers accuracy (docs: jaggedness 5).
+     */
+    private function excerpt(string $message): string
+    {
+        $limit = 1000;
+
+        if (mb_strlen($message) <= $limit * 2) {
+            return $message;
+        }
+
+        return mb_substr($message, 0, $limit)."\n…\n".mb_substr($message, -$limit);
     }
 
     /**
