@@ -4,6 +4,7 @@ namespace Josephdlmd\AgentTools\Console;
 
 use Closure;
 use Illuminate\Console\Command;
+use Josephdlmd\AgentTools\Hooks\PromptRouter;
 use Josephdlmd\AgentTools\Hooks\StopGuard;
 use Throwable;
 
@@ -19,11 +20,11 @@ class AgentJudgeCommand extends Command
      */
     public const INPUT = 'agent-tools.hook-input';
 
-    protected $signature = 'agent:judge {event : The hook event to judge (stop)}';
+    protected $signature = 'agent:judge {event : The hook event to judge (stop, prompt)}';
 
     protected $description = 'Judge a Claude Code hook event with TypeSafe and print the hook response';
 
-    public function handle(StopGuard $stopGuard): int
+    public function handle(StopGuard $stopGuard, PromptRouter $promptRouter): int
     {
         try {
             /** @var Closure(): string $readInput */
@@ -35,6 +36,7 @@ class AgentJudgeCommand extends Command
 
             $output = match ($this->argument('event')) {
                 'stop' => is_array($input) ? $stopGuard->evaluate($input) : null,
+                'prompt' => is_array($input) ? $promptRouter->evaluate($input) : null,
                 default => null,
             };
 

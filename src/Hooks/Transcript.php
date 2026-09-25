@@ -52,6 +52,34 @@ class Transcript
     }
 
     /**
+     * The text of the assistant's last message in the transcript, or null.
+     */
+    public static function lastAssistantText(?string $path): ?string
+    {
+        if ($path === null || ! is_file($path) || ! is_readable($path)) {
+            return null;
+        }
+
+        $text = null;
+
+        foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            $entry = json_decode($line, true);
+
+            if (! is_array($entry) || ($entry['type'] ?? null) !== 'assistant' || ($entry['isSidechain'] ?? false) === true) {
+                continue;
+            }
+
+            $blocks = array_filter((array) ($entry['message']['content'] ?? []), fn (mixed $block): bool => is_array($block) && ($block['type'] ?? null) === 'text' && trim((string) ($block['text'] ?? '')) !== '');
+
+            if ($blocks !== []) {
+                $text = implode("\n", array_map(fn (array $block): string => (string) $block['text'], $blocks));
+            }
+        }
+
+        return $text;
+    }
+
+    /**
      * A prompt is a user entry the person wrote: not injected, not a tool result.
      *
      * @param  array<string, mixed>  $entry

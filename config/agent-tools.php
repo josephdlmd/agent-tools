@@ -66,4 +66,30 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Prompt router
+    |--------------------------------------------------------------------------
+    |
+    | Suggests which skills and rule files the agent should load for a prompt.
+    | Off until an app points it at a candidates file. "shadow" logs what it
+    | would suggest; "suggest" adds a one-line hint. Only the skills listed in
+    | surface_skills, and rule files above reference_confidence, are surfaced,
+    | because those are what scored well against hand-checked labels.
+    |
+    */
+
+    'prompt' => [
+        'enabled' => env('AGENT_TOOLS_PROMPT_ENABLED', false),
+        'mode' => env('AGENT_TOOLS_PROMPT_MODE', 'shadow'),
+        'candidates' => base_path('.ai/agent-tools/routing-candidates.json'),
+        'project' => 'A Laravel business app with a Filament admin panel, worked on through Claude Code.',
+        'surface_skills' => [],
+        'reference_confidence' => 0.8,
+        'shortlist' => 3,
+        'gate' => 0.30,
+        'fits' => 0.30,
+        'multi' => 0.60,
+    ],
+
 ];
