@@ -92,4 +92,56 @@ return [
         'multi' => 0.60,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Issue triage
+    |--------------------------------------------------------------------------
+    |
+    | agent:triage decides whether an agent could take an open issue alone.
+    | Labels, assignees and blockers are checked in code; each question below
+    | is one literal yes/no for TypeSafe. Risky issues go to a person, and a
+    | verdict never makes an issue eligible: only the ready label does.
+    |
+    */
+
+    'triage' => [
+        'ready_label' => 'ready-for-agent',
+        'question_label' => 'question',
+        'marker' => '<!-- agent-tools:triage -->',
+        'body_limit' => 6000,
+        'specified_threshold' => 0.7,
+        'unspecified_threshold' => 0.3,
+        'risk_threshold' => 0.5,
+        'questions' => [
+            'specified' => [
+                'type' => 'noul',
+                'instructions' => 'Is the issue ready to implement without any further decisions?',
+                'criteria' => [
+                    'true' => 'It names the change and gives acceptance criteria or an equally concrete finish line, leaving nothing for the reader to decide.',
+                    'false' => 'It asks a question, lists options to choose between, leaves a decision open, or only describes a problem.',
+                ],
+            ],
+            'changes_screen' => [
+                'type' => 'noul',
+                'instructions' => 'Does the work change what people see or do in the admin panel?',
+            ],
+            'touches_access' => [
+                'type' => 'noul',
+                'instructions' => 'Does the work change sign-in, passwords, or who is allowed to see or change something?',
+            ],
+            'touches_money' => [
+                'type' => 'noul',
+                'instructions' => 'Does the work change how money amounts are calculated or stored?',
+                'criteria' => [
+                    'true' => 'It changes a calculation, a stored amount, a currency conversion or a rounding rule.',
+                    'false' => 'It does not touch money, or only changes how amounts are displayed or formatted.',
+                ],
+            ],
+            'deletes_data' => [
+                'type' => 'noul',
+                'instructions' => 'Does the work add or change a way to delete or overwrite stored records?',
+            ],
+        ],
+    ],
+
 ];

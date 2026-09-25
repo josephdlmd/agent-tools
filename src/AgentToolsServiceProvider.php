@@ -4,6 +4,7 @@ namespace Josephdlmd\AgentTools;
 
 use Illuminate\Support\ServiceProvider;
 use Josephdlmd\AgentTools\Console\AgentJudgeCommand;
+use Josephdlmd\AgentTools\Console\AgentTriageCommand;
 
 class AgentToolsServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,6 @@ class AgentToolsServiceProvider extends ServiceProvider
             __DIR__.'/../config/agent-tools.php' => config_path('agent-tools.php'),
         ], 'agent-tools-config');
 
-        $this->commands([AgentJudgeCommand::class]);
+        $this->commands([AgentJudgeCommand::class, AgentTriageCommand::class]);
     }
 }
